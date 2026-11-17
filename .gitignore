@@ -1,0 +1,13 @@
+# Godot 4
+.godot/
+/android/
+*.translation
+# Builds
+/build/
+/dist/
+*.log
+/settings.cfg
+/_preview/
+server/node_modules/
+__pycache__/
+*.pyc
