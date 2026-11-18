@@ -16,7 +16,7 @@
 Run the server on one PC. On the other PC, in MULTIPLAYER (when it says NOT CONNECTED), set the address to `ws://<that PC's IP>:8765`, for example `ws://192.168.1.5:8765`. Windows Firewall will ask once to allow Node.js: allow it.
 
 ## Over the internet
-The server must run somewhere public. Not set up yet.
+The public lobby server runs at `wss://treadfall-lobby.onrender.com` (the game's default). It is a free instance, so after 15 idle minutes the first player waits about a minute while it wakes up.
 
 ## Files
 `net/net.gd` (Net autoload: server connection, lobby), `net/replicator.gd` (host sends the battle), `net/remote_controller.gd`, `net/net_input.gd`, `modes/net_base_defense.gd` (host), `modes/net_client.gd` (other players), `ui/lobby.gd`, `server/lobby_server.js`. Test: start the server, then `godot --headless res://tools/net_smoke.tscn -- host 20` and `-- join 20` (extra cases: night, shop, over, quit, hostquit).

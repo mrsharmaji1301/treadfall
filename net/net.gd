@@ -17,7 +17,7 @@ signal peer_left(peer: int)
 signal back_in_lobby
 
 const VERSION := "1"
-const DEFAULT_SERVER := "ws://127.0.0.1:8765"
+const DEFAULT_SERVER := "wss://treadfall-lobby.onrender.com"
 const HOST := 1
 const ALL := 255
 ## Seats in a lobby, the host's included. A new lobby opens four of them.
