@@ -63,6 +63,10 @@ func _load() -> void:
 	if f.load(_path()) == OK:
 		server_url = str(f.get_value("net", "server", DEFAULT_SERVER))
 		player_name = str(f.get_value("net", "name", player_name))
+	# Older builds saved the local test address. Move those players to the
+	# public server so nobody has to type it in by hand.
+	if server_url.strip_edges() in ["", "ws://127.0.0.1:8765", "ws://localhost:8765"]:
+		server_url = DEFAULT_SERVER
 
 
 func save() -> void:

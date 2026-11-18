@@ -129,11 +129,13 @@ func _show() -> void:
 func _show_offline() -> void:
 	_text("NOT CONNECTED", Vector2(190, 110), 24, Cfg.COL_WARN)
 	_text("LOBBY SERVER ADDRESS", Vector2(190, 170), 18)
-	var addr := _field(Net.server_url, Vector2(190, 200), 520.0, "ws://address:port", 120)
+	var addr := _field(Net.server_url, Vector2(190, 200), 520.0, Net.DEFAULT_SERVER, 120)
+	_text("Leave it as it is to play online. Change it only for a server on your own WiFi.", Vector2(190, 250), 14)
 	var go := _small("CONNECT", 200.0)
 	go.position = Vector2(730, 199)
 	go.pressed.connect(func() -> void:
-		Net.server_url = addr.text.strip_edges()
+		var url := addr.text.strip_edges()
+		Net.server_url = url if url != "" else Net.DEFAULT_SERVER
 		Net.save()
 		_say("")
 		Net.connect_server())
