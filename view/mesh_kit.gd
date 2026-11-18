@@ -209,7 +209,8 @@ static func _frond(st: SurfaceTool, from: Vector3, yaw: float, pitch: float, dro
 	var side_h := Vector3(-dir.z, 0.0, dir.x)
 	var width: float = reach * 0.42
 	var twist: float = rng.randf_range(-0.7, 0.7)
-	var segs := 7
+	# Fewer bends along each frond in the browser version.
+	var segs := 4 if OS.has_feature("web") else 7
 	var p := from
 	var rows: Array = []
 	for s in segs + 1:

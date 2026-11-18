@@ -44,11 +44,12 @@ func setup(shell) -> void:
 		card.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(card)
 
-	var lamp := OmniLight3D.new()
-	lamp.light_color = color
-	lamp.light_energy = 1.6 * size
-	lamp.omni_range = 2.4 * size
-	add_child(lamp)
+	if Cfg.small_lights:
+		var lamp := OmniLight3D.new()
+		lamp.light_color = color
+		lamp.light_energy = 1.6 * size
+		lamp.omni_range = 2.4 * size
+		add_child(lamp)
 
 	if _shadow == null:
 		var dark := StandardMaterial3D.new()

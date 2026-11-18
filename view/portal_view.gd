@@ -129,7 +129,7 @@ func _process(_delta: float) -> void:
 		queue_free()
 		return
 	_light.light_energy = 2.4 * GameState.night
-	_light.visible = GameState.night > 0.02
+	_light.visible = GameState.night > 0.02 and Cfg.small_lights
 
 
 func _on_used(_tank, from: Vector2, to: Vector2) -> void:

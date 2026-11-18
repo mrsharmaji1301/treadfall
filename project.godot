@@ -33,6 +33,7 @@ window/size/viewport_height=720
 window/size/mode=4
 window/size/mode.web=0
 window/stretch/mode="canvas_items"
+window/dpi/allow_hidpi.web=false
 
 [rendering]
 

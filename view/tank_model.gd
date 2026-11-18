@@ -438,7 +438,7 @@ func _add_lamps(tank) -> void:
 		lamp.position = Vector3(0.5, 0.235, 0.2 * side)
 		lamp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_body.add_child(lamp)
-	if ours and (tank.is_player or int(Cfg.gfx["shadows"]) >= 2) and not tank.display:
+	if ours and (tank.is_player or (int(Cfg.gfx["shadows"]) >= 2 and Cfg.small_lights)) and not tank.display:
 		_beam = SpotLight3D.new()
 		_beam.light_color = Color(1.0, 0.95, 0.85)
 		_beam.spot_range = 9.0
@@ -524,6 +524,7 @@ func _become_wreck() -> void:
 	_glow.light_energy = 1.4
 	_glow.omni_range = 4.0
 	_glow.position = Vector3(0.0, 0.7, 0.0)
+	_glow.visible = Cfg.small_lights
 	add_child(_glow)
 	_burn(self)
 	_break_up()

@@ -249,9 +249,15 @@ func apply_quality() -> void:
 	var g: Dictionary = Cfg.gfx
 	var sh: int = int(g["shadows"])
 	sun.shadow_enabled = sh > 0
-	RenderingServer.directional_shadow_atlas_set_size([1024, 1024, 2048, 4096, 8192][sh], true)
+	var atlas: Array = [1024, 2048, 2048, 4096, 4096] if OS.has_feature("web") else [1024, 1024, 2048, 4096, 8192]
+	RenderingServer.directional_shadow_atlas_set_size(atlas[sh], true)
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if sh <= 1 \
 		else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	# Browser: every split draws the whole scene once more, so the lower
+	# levels use one shadow picture and HIGH and up two.
+	if OS.has_feature("web"):
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL if sh <= 2 \
+			else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_blend_splits = sh >= 3
 	env.ssao_enabled = bool(g["ssao"])
 	env.glow_enabled = bool(g["glow"])

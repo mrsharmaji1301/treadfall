@@ -76,12 +76,13 @@ func setup(pickup) -> void:
 			face.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			_coin.add_child(face)
 
-	var glow := OmniLight3D.new()
-	glow.light_color = color
-	glow.light_energy = 0.9
-	glow.omni_range = 2.6
-	glow.position.y = 0.9
-	add_child(glow)
+	if Cfg.small_lights:
+		var glow := OmniLight3D.new()
+		glow.light_color = color
+		glow.light_energy = 0.9
+		glow.omni_range = 2.6
+		glow.position.y = 0.9
+		add_child(glow)
 
 
 func _process(delta: float) -> void:

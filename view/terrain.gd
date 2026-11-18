@@ -227,7 +227,9 @@ static func vehicle_xf(x: float, z: float, heading: float, half_len: float,
 
 
 static func build_mesh() -> ArrayMesh:
-	var step := 0.5
+	# The browser version uses a coarser grid: a quarter of the triangles
+	# to draw, and the map is built four times faster.
+	var step := 1.0 if OS.has_feature("web") else 0.5
 	var x0 := -46.0
 	var z0 := -42.0
 	var nx: int = int((float(Cfg.cols) + 92.0) / step) + 1
