@@ -560,9 +560,12 @@ func _add_pebble(x: float, z: float, size: float, rng: RandomNumberGenerator) ->
 func _scatter(mesh: Mesh, material: Material, xfs: Array, colors: PackedColorArray,
 		shadows: bool, cells: PackedColorArray = PackedColorArray()) -> void:
 	var tiles: Dictionary = {}
+	# Browser: bigger tiles. Each tile is one draw call, and there the
+	# number of draw calls costs far more than the extra plants drawn.
+	var tile: float = TILE * 4.0 if OS.has_feature("web") else TILE
 	for i in xfs.size():
 		var o: Vector3 = xfs[i].origin
-		var key := Vector2i(int(floor(o.x / TILE)), int(floor(o.z / TILE)))
+		var key := Vector2i(int(floor(o.x / tile)), int(floor(o.z / tile)))
 		if not tiles.has(key):
 			tiles[key] = []
 		tiles[key].append(i)

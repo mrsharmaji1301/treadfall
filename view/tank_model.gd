@@ -155,6 +155,10 @@ static func _build_geo() -> void:
 	for i in 6:
 		var a: float = TAU * i / 6.0
 		Kit.put(wheel, Kit.cylinder(0.006, 0.052, 5), Vector3(cos(a) * 0.03, 0.0, sin(a) * 0.03))
+	# Browser: the tyre is part of the wheel itself, one draw call less per
+	# wheel (draw calls are what the browser renderer pays most for).
+	if OS.has_feature("web"):
+		wheel.append_array(tyre)
 
 	# Side skirt plate with two bolts, and a whip antenna standing on its base.
 	var skirt: Array = []
@@ -333,7 +337,9 @@ func setup(tank) -> void:
 			var wx: float = -0.37 + i * 0.648 / (count - 1)
 			_add_wheel(Vector3(wx, WHEEL_Y, 0.333 * side), big, dark)
 			row.append([_wheels[-1], wx, 0.3 * side])
-		for i in count + 1:
+		# The lower track run between the wheels; the browser version keeps
+		# only the track belt above it, which saves a draw call per stretch.
+		for i in (0 if OS.has_feature("web") else count + 1):
 			stretch.append(Kit.part(self, _geo["link"], _track_mat, Vector3(0.0, 0.0, 0.265 * side)))
 		_road.append(row)
 		_links.append(stretch)
@@ -456,8 +462,10 @@ func _add_lamps(tank) -> void:
 func _add_wheel(pos: Vector3, size: float, material: Material) -> void:
 	var w := Kit.part(self, _geo["wheel"], material, pos, ALONG_Z)
 	w.scale = Vector3(size, 1.0, size)
-	# The rubber tyre round the painted wheel disc.
-	Kit.part(w, _geo["tyre"], Mat.surface("rubber", Color(0.06, 0.06, 0.065), 0.95, 0.0, 3.0), Vector3.ZERO)
+	# The rubber tyre round the painted wheel disc (in the browser it is
+	# already part of the wheel).
+	if not OS.has_feature("web"):
+		Kit.part(w, _geo["tyre"], Mat.surface("rubber", Color(0.06, 0.06, 0.065), 0.95, 0.0, 3.0), Vector3.ZERO)
 	w.set_meta("radius", WHEEL_RADIUS * size)
 	_wheels.append(w)
 
