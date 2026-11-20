@@ -444,7 +444,7 @@ func _add_lamps(tank) -> void:
 		lamp.position = Vector3(0.5, 0.235, 0.2 * side)
 		lamp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_body.add_child(lamp)
-	if ours and (tank.is_player or (int(Cfg.gfx["shadows"]) >= 2 and Cfg.small_lights)) and not tank.display:
+	if ours and Cfg.small_lights and (tank.is_player or int(Cfg.gfx["shadows"]) >= 2) and not tank.display:
 		_beam = SpotLight3D.new()
 		_beam.light_color = Color(1.0, 0.95, 0.85)
 		_beam.spot_range = 9.0

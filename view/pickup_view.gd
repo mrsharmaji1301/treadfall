@@ -5,12 +5,18 @@ extends Node3D
 
 const Terrain := preload("res://view/terrain.gd")
 const Mat := preload("res://view/materials.gd")
+const Fx := preload("res://fx/fx.gd")
 
 const S := 1.0 / 48.0
 
 var source
 var _coin: Node3D
 var _ring: MeshInstance3D
+var _rim_mat: StandardMaterial3D
+## A soft glow round the coin that brightens at night, so power-ups show in
+## the dark without a real light.
+var _halo_mat: StandardMaterial3D
+var _color := Color.WHITE
 var _time := 0.0
 
 
@@ -38,7 +44,25 @@ func setup(pickup) -> void:
 
 	_coin = Node3D.new()
 	add_child(_coin)
+	_color = color
+	_halo_mat = StandardMaterial3D.new()
+	_halo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_halo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_halo_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_halo_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	_halo_mat.albedo_texture = Fx.puff_texture()
+	_halo_mat.albedo_color = Color(color.r, color.g, color.b, 0.3)
+	var halo_mesh := QuadMesh.new()
+	halo_mesh.size = Vector2(1.6, 1.6)
+	var halo := MeshInstance3D.new()
+	halo.mesh = halo_mesh
+	halo.material_override = _halo_mat
+	halo.position.y = 0.95
+	halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(halo)
+
 	var rim_mat := StandardMaterial3D.new()
+	_rim_mat = rim_mat
 	rim_mat.albedo_color = color.darkened(0.35)
 	rim_mat.metallic = 0.8
 	rim_mat.roughness = 0.35
@@ -95,5 +119,9 @@ func _process(delta: float) -> void:
 	var pulse: float = 1.0 + 0.07 * sin(_time * 4.0)
 	_ring.scale = Vector3(pulse, 1.0, pulse)
 	_ring.rotation.y = _time * 0.5
+	# Brighter the darker it gets.
+	var n: float = GameState.night
+	_rim_mat.emission_energy_multiplier = lerpf(0.5, 3.0, n)
+	_halo_mat.albedo_color = Color(_color.r, _color.g, _color.b, lerpf(0.3, 0.95, n) * pulse)
 	# Blink for the last few seconds.
 	visible = source.life > 5.0 or fmod(_time, 0.3) < 0.2

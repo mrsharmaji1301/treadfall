@@ -232,7 +232,9 @@ func _veil_follow(n: float) -> void:
 		_veil.material = mat
 		layer.add_child(_veil)
 	var who = _tank if _tank != null and is_instance_valid(_tank) and _tank.alive else null
-	_veil.visible = n > 0.01 and who != null
+	# Browser: the veil is drawn all day at zero strength, so its shader is
+	# ready when night falls instead of stalling the game at dusk.
+	_veil.visible = (n > 0.01 or OS.has_feature("web")) and who != null
 	if not _veil.visible:
 		return
 	var at: Vector3 = spot(who.global_position)

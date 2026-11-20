@@ -56,7 +56,7 @@ const AA_NAMES := ["OFF", "FXAA", "MSAA 2X", "MSAA 4X"]
 const FOLIAGE_NAMES := ["SPARSE", "MEDIUM", "FULL"]
 const FPS_CAPS := [0, 30, 60, 90, 120, 144]
 ## Small moving lights: shots in flight, power-ups, burning wrecks, the
-## gates and the headlamps of computer allies. The browser renderer draws
+## gates and the tank headlamps. The browser renderer draws
 ## everything a light touches once more for every such light, so the
 ## browser version leaves them out and keeps only the glowing surfaces.
 var small_lights := not OS.has_feature("web")
@@ -76,7 +76,7 @@ var gfx_found := ""
 ## preset (no edge smoothing, simple shadows, fewer plants), and its
 ## version. Settings saved by an older browser build are picked again.
 const WEB_START := {"scale": 80, "shadows": 1, "ssao": false, "glow": false, "fog": false, "gi": false, "aa": 0, "foliage": 1}
-const WEB_GFX := 1
+const WEB_GFX := 2
 var web_gfx: int = 0
 
 ## Where the power-up bar sits on screen (its top left corner, in the
@@ -301,7 +301,9 @@ func auto_graphics() -> void:
 	else:
 		set_preset(detect_quality())
 	gfx_auto_done = true
-	gfx_probe = true
+	# The browser's frame rate hangs on the processor, not on these options,
+	# so there lowering them would only spoil the picture.
+	gfx_probe = not OS.has_feature("web")
 	save_settings()
 
 
