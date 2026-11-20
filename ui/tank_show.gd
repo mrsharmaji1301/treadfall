@@ -20,11 +20,13 @@ func _ready() -> void:
 	_vp = SubViewport.new()
 	_vp.own_world_3d = true
 	_vp.transparent_bg = true
-	_vp.msaa_3d = Viewport.MSAA_4X
-	_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_vp.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
 	# Drawn at the real screen resolution, not at the 1280 x 720 layout
-	# size, so the tank is sharp on a Full HD or bigger screen.
-	var sharp: float = clampf(float(DisplayServer.window_get_size().y) / 720.0, 1.0, 3.0)
+	# size, so the tank is sharp on a Full HD or bigger screen. The browser
+	# draws it at layout size with plain edges, which costs far less.
+	var web: bool = OS.has_feature("web")
+	_vp.msaa_3d = Viewport.MSAA_DISABLED if web else Viewport.MSAA_4X
+	var sharp: float = 1.0 if web else clampf(float(DisplayServer.window_get_size().y) / 720.0, 1.0, 3.0)
 	_vp.size = Vector2i(size * sharp)
 	add_child(_vp)
 	var picture := TextureRect.new()
@@ -49,6 +51,8 @@ func _ready() -> void:
 	sun.light_energy = 1.25
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 8.0
+	if web:
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	_vp.add_child(sun)
 	var fill := DirectionalLight3D.new()
 	fill.rotation_degrees = Vector3(-15.0, 140.0, 0.0)

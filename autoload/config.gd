@@ -55,6 +55,11 @@ const SHADOW_NAMES := ["OFF", "LOW", "MEDIUM", "HIGH", "ULTRA"]
 const AA_NAMES := ["OFF", "FXAA", "MSAA 2X", "MSAA 4X"]
 const FOLIAGE_NAMES := ["SPARSE", "MEDIUM", "FULL"]
 const FPS_CAPS := [0, 30, 60, 90, 120, 144]
+## Small moving lights: shots in flight, power-ups, burning wrecks, the
+## gates and the tank headlamps. The browser renderer draws
+## everything a light touches once more for every such light, so the
+## browser version leaves them out and keeps only the glowing surfaces.
+var small_lights := not OS.has_feature("web")
 var gfx: Dictionary = PRESETS[2].duplicate()
 var vsync := true
 ## Frames per second limit; 0 is no limit.
@@ -67,6 +72,12 @@ var gfx_auto_done := false
 var gfx_probe := false
 ## What the first-start check found, for the settings page.
 var gfx_found := ""
+## Browser version: the starting graphics, lighter than any desktop
+## preset (no edge smoothing, simple shadows, fewer plants), and its
+## version. Settings saved by an older browser build are picked again.
+const WEB_START := {"scale": 80, "shadows": 1, "ssao": false, "glow": false, "fog": false, "gi": false, "aa": 0, "foliage": 1}
+const WEB_GFX := 2
+var web_gfx: int = 0
 
 ## Where the power-up bar sits on screen (its top left corner, in the
 ## 1280 x 720 layout). The player drags it while the game is paused.
@@ -282,9 +293,17 @@ func detect_quality() -> int:
 
 ## First start on this computer: pick a graphics level by itself.
 func auto_graphics() -> void:
-	set_preset(detect_quality())
+	if OS.has_feature("web"):
+		quality = 4
+		gfx = WEB_START.duplicate()
+		web_gfx = WEB_GFX
+		gfx_found = "browser"
+	else:
+		set_preset(detect_quality())
 	gfx_auto_done = true
-	gfx_probe = true
+	# The browser's frame rate hangs on the processor, not on these options,
+	# so there lowering them would only spoil the picture.
+	gfx_probe = not OS.has_feature("web")
 	save_settings()
 
 
@@ -465,6 +484,7 @@ func load_settings() -> void:
 	gfx_auto_done = bool(f.get_value("graphics", "auto_done", false))
 	gfx_probe = bool(f.get_value("graphics", "probe", false))
 	gfx_found = str(f.get_value("graphics", "found", ""))
+	web_gfx = int(f.get_value("graphics", "web", 0))
 	if quality == 4:
 		gfx["scale"] = clampi(int(f.get_value("graphics", "scale", 100)), 50, 100)
 		gfx["shadows"] = clampi(int(f.get_value("graphics", "shadows", 3)), 0, 4)
@@ -510,6 +530,7 @@ func save_settings() -> void:
 	f.set_value("graphics", "auto_done", gfx_auto_done)
 	f.set_value("graphics", "probe", gfx_probe)
 	f.set_value("graphics", "found", gfx_found)
+	f.set_value("graphics", "web", web_gfx)
 	f.set_value("hud", "bar_pos", bar_pos)
 	f.set_value("game", "difficulty", difficulty)
 	f.set_value("game", "display", display_mode)
@@ -536,7 +557,8 @@ func _ready() -> void:
 	AudioServer.add_bus_effect(0, limiter)
 	apply_volume()
 	# First start on this computer: choose the graphics level by itself.
-	if not gfx_auto_done and not OS.get_cmdline_user_args().has("noauto"):
+	var web_old: bool = OS.has_feature("web") and web_gfx < WEB_GFX
+	if (not gfx_auto_done or web_old) and not OS.get_cmdline_user_args().has("noauto"):
 		auto_graphics()
 	apply_graphics.call_deferred()
 	# Browser: the game starts inside the page; F11 or Settings go full screen.

@@ -115,7 +115,11 @@ func _process(delta: float) -> void:
 		if GameState.total_waves > 0 else "WAVE %d" % GameState.wave
 	_fps.visible = Cfg.show_fps
 	if Cfg.show_fps:
-		_fps.text = "%d FPS" % Engine.get_frames_per_second()
+		# Where a frame's time goes, to tell a slow computer from slow game code.
+		_fps.text = "%d FPS   game %.1f ms   physics %.1f ms   draws %d" % [Engine.get_frames_per_second(),
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+			Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)]
 	_labels["incoming"].text = "INCOMING %d" % GameState.incoming
 	_labels["core"].text = "BASE %d/%d" % [GameState.core_hp, GameState.core_max]
 	_labels["hull"].text = "HULL %d/%d" % [GameState.player_hp, GameState.player_max]

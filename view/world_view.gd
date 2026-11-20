@@ -232,7 +232,9 @@ func _veil_follow(n: float) -> void:
 		_veil.material = mat
 		layer.add_child(_veil)
 	var who = _tank if _tank != null and is_instance_valid(_tank) and _tank.alive else null
-	_veil.visible = n > 0.01 and who != null
+	# Browser: the veil is drawn all day at zero strength, so its shader is
+	# ready when night falls instead of stalling the game at dusk.
+	_veil.visible = (n > 0.01 or OS.has_feature("web")) and who != null
 	if not _veil.visible:
 		return
 	var at: Vector3 = spot(who.global_position)
@@ -249,9 +251,15 @@ func apply_quality() -> void:
 	var g: Dictionary = Cfg.gfx
 	var sh: int = int(g["shadows"])
 	sun.shadow_enabled = sh > 0
-	RenderingServer.directional_shadow_atlas_set_size([1024, 1024, 2048, 4096, 8192][sh], true)
+	var atlas: Array = [1024, 2048, 2048, 4096, 4096] if OS.has_feature("web") else [1024, 1024, 2048, 4096, 8192]
+	RenderingServer.directional_shadow_atlas_set_size(atlas[sh], true)
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if sh <= 1 \
 		else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	# Browser: every split draws the whole scene once more, so the lower
+	# levels use one shadow picture and HIGH and up two.
+	if OS.has_feature("web"):
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL if sh <= 2 \
+			else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_blend_splits = sh >= 3
 	env.ssao_enabled = bool(g["ssao"])
 	env.glow_enabled = bool(g["glow"])
@@ -554,9 +562,12 @@ func _add_pebble(x: float, z: float, size: float, rng: RandomNumberGenerator) ->
 func _scatter(mesh: Mesh, material: Material, xfs: Array, colors: PackedColorArray,
 		shadows: bool, cells: PackedColorArray = PackedColorArray()) -> void:
 	var tiles: Dictionary = {}
+	# Browser: bigger tiles. Each tile is one draw call, and there the
+	# number of draw calls costs far more than the extra plants drawn.
+	var tile: float = TILE * 4.0 if OS.has_feature("web") else TILE
 	for i in xfs.size():
 		var o: Vector3 = xfs[i].origin
-		var key := Vector2i(int(floor(o.x / TILE)), int(floor(o.z / TILE)))
+		var key := Vector2i(int(floor(o.x / tile)), int(floor(o.z / tile)))
 		if not tiles.has(key):
 			tiles[key] = []
 		tiles[key].append(i)
